@@ -166,7 +166,9 @@ class ProductView(ViewSet):
         category = request.query_params.get('category', None)
         order = request.query_params.get('order_by', None)
         direction = request.query_params.get('direction', None)
-
+        min_price = request.query_params.get('min_price', None)
+        if min_price is not None:
+            products = products.filter(price__gte = min_price)
         if number_sold:
             products = products.annotate(
                 order_count=Count('orders')
