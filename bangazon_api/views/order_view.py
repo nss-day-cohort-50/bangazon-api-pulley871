@@ -60,11 +60,12 @@ class OrderView(ViewSet):
         """Complete an order by adding a payment type and completed data
         """
         try:
-            order = Order.objects.get(pk=pk, user=request.auth.user)
+            order = Order.objects.get(pk=pk, user=request.auth.user, completed_on= None)
             payment_type = PaymentType.objects.get(
                 pk=request.data['paymentTypeId'], customer=request.auth.user)
             order.payment_type = payment_type
             order.completed_on = datetime.now()
+            order.save()
             return Response({'message': "Order Completed"})
         except Order.DoesNotExist as ex:
             return Response({'message': ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
