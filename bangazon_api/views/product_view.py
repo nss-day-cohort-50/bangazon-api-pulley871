@@ -8,7 +8,7 @@ from rest_framework.exceptions import ValidationError
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from bangazon_api.helpers import STATE_NAMES
-from bangazon_api.models import Product, Store, Category, Order, Rating, Recommendation
+from bangazon_api.models import Product, Store, Category, Order, Rating, Recommendation, CustomerFavoriteProduct
 from bangazon_api.models.order_product import OrderProduct
 from bangazon_api.serializers import (
     ProductSerializer, CreateProductSerializer, MessageSerializer,
@@ -345,3 +345,25 @@ class ProductView(ViewSet):
             )
 
         return Response({'message': 'Rating added'}, status=status.HTTP_201_CREATED)
+    @action(methods=['post', 'delete'], detail=True)
+    def favorite(self, request, pk):
+        if request.method == "POST":
+            try:
+                customer = request.auth.user
+                product = Product.objects.get(pk=pk)
+                CustomerFavoriteProduct.objects.create(
+                    customer = customer,
+                    product = product
+                )
+                return Response({'message': 'favorite added'}, status=status.HTTP_201_CREATED)
+            except:
+                return Response({"message": "Error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        elif request.method == 'DELETE':
+            try:
+                customer = request.auth.user
+                product = Product.objects.get(pk=pk)
+                favorite = CustomerFavoriteProduct.objects.get(customer=customer, product=product)
+                favorite.delete()
+                return Response({"message":"Unfavorited Product"}, status=status.HTTP_204_NO_CONTENT)
+            except:
+                return Response({"Message": "Server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
