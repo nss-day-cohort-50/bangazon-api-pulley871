@@ -10,10 +10,23 @@
 
     {% for order in orders %}
         <h2>Order Number: {{ order.id }}</h2>
-        <h2>Completion Date: {{order.completed_on}}</h2>
+        
         <h2>Ordered by: {{order.user.first_name}} {{order.user.last_name}}</h2>
-        <h2>Order Payment Type: {{order.payment_type.id}}</h2>
-        <h2>Order Total: {{order.total}}</h2><br></br>
+        {% if order.payment_type.id != None %}
+            <h2>Order Payment Type: {{order.payment_type.id}}</h2>
+        {% endif %}
+        {% if order.payment_type.id == None %}
+            
+        {% endif %}
+        
+        <h2>Order Total: {{order.total}}</h2>
+        {% if order.completed_on != None %}
+            <h2>Completed On: {{order.completed_on}}</h2>
+        {% endif %}
+        {% if order.completed_on == None %}
+            <h2>Order Date: {{order.created_on}}</h2>
+        {% endif %}
+        <br></br>
     {% endfor %}
   </body>
 </html>
