@@ -92,18 +92,18 @@ class Command(BaseCommand):
             payment_type=user.payment_types.first(),
             completed_on=datetime.now()
         )
-        category = random.randint(1, Category.objects.count())
+        # category = random.randint(1, Category.objects.count())
         products = [product.id for product in Product.objects.filter(
-            category_id=category)]
+            category_id=1)]
         order.products.set(products)
 
     def create_open_orders(self, user):
         order = Order.objects.create(
             user=user
         )
-        category = random.randint(1, Category.objects.count())
+        # category = random.randint(1, Category.objects.count())
         products = [product.id for product in Product.objects.filter(
-            category_id=category)]
+            category_id=1)]
         order.products.set(products)
 
     def create_favorite(self, user):
