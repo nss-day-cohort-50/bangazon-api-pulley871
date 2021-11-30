@@ -9,6 +9,8 @@ from django.contrib.auth.models import User
 from bangazon_api.helpers import STATE_NAMES
 from bangazon_api.models import Category
 from bangazon_api.models.product import Product
+from bangazon_api.models.rating import Rating
+from bangazon_api.models.store import Store
 
 
 class ProductTests(APITestCase):
@@ -75,3 +77,48 @@ class ProductTests(APITestCase):
         response = self.client.get('/api/products')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), Product.objects.count())
+    
+    def test_delete_product(self):
+        
+        product = Product()
+        product.name = "poop"
+        product.price = 1000
+        product.description = "hello"
+        product.quantity = 2
+        product.location = "Tennessee"
+        product.image_path = ""
+        product.category = Category.objects.first()
+        product.store = Store.objects.first()
+        product.save()
+        url = f"/api/products/{product.id}"
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    
+    def test_avg_rating(self):
+        product = Product()
+        product.name = "poop"
+        product.price = 1000
+        product.description = "hello"
+        product.quantity = 2
+        product.location = "Tennessee"
+        product.image_path = ""
+        product.category = Category.objects.first()
+        product.store = Store.objects.first()
+        product.save()
+        rating1 = Rating()
+        rating1.product = product
+        rating1.customer = self.user1
+        rating1.score = 5
+        rating1.save()
+        rating2 = Rating()
+        rating2.product = product
+        rating2.customer = self.user1
+        rating2.score = 4
+        rating2.save()
+        avg_rating = (rating1.score + rating2.score) / 2
+        api = f"/api/products/{product.id}"
+        response = self.client.get(api)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['average_rating'], avg_rating)

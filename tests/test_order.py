@@ -12,7 +12,7 @@ class OrderTests(APITestCase):
         """
         Seed the database
         """
-        call_command('seed_db')
+        call_command('seed_db', user_count=3)
         self.user1 = User.objects.filter(store=None).first()
         self.token = Token.objects.get(user=self.user1)
 
@@ -63,3 +63,4 @@ class OrderTests(APITestCase):
         response = self.client.put(url, new_order, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    
