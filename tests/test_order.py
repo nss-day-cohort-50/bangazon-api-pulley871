@@ -1,10 +1,10 @@
-from rest_framework import status
+from rest_framework import response, status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 from django.core.management import call_command
 from django.contrib.auth.models import User
-from datetime import datetime
-from bangazon_api.models import Order, Product, PaymentType
+from datetime import date, datetime
+from bangazon_api.models import Order, Product, PaymentType, product
 
 
 class OrderTests(APITestCase):
@@ -63,4 +63,18 @@ class OrderTests(APITestCase):
         response = self.client.put(url, new_order, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    
+    def test_new_line_not_added_to_order(self):
+        self.order1.completed_on = datetime.now()
+        self.order1.save()
+        url = f"/api/products/1/add_to_order"
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.order2.completed_on = datetime.now()
+        self.order2.save()
+        
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertNotEqual(response.data["order_id"], self.order1.id)
+        self.assertNotEqual(response.data["order_id"], self.order2.id)
+
+
