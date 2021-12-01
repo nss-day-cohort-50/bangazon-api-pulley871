@@ -7,8 +7,10 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from rest_framework.serializers import ModelSerializer
+from bangazon_api import serializers
 from bangazon_api.helpers import STATE_NAMES
-from bangazon_api.models import Product, Store, Category, Order, Rating, Recommendation, CustomerFavoriteProduct
+from bangazon_api.models import Product, Store, Category, Order, Rating, Recommendation, CustomerFavoriteProduct, product
 from bangazon_api.models.order_product import OrderProduct
 from bangazon_api.serializers import (
     ProductSerializer, CreateProductSerializer, MessageSerializer,
@@ -347,7 +349,7 @@ class ProductView(ViewSet):
 
         return Response({'message': 'Rating added'}, status=status.HTTP_201_CREATED)
     @action(methods=['post', 'delete'], detail=True)
-    def favorite(self, request, pk):
+    def like(self, request, pk):
         if request.method == "POST":
             try:
                 customer = request.auth.user
@@ -368,3 +370,21 @@ class ProductView(ViewSet):
                 return Response({"message":"Unfavorited Product"}, status=status.HTTP_204_NO_CONTENT)
             except:
                 return Response({"Message": "Server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(methods=['get'], detail=False)
+    def liked(slef,request):
+        try:
+            customer = request.auth.user
+            liked = CustomerFavoriteProduct.objects.filter(customer=customer)
+            data = LikedSer(liked, many=True, context={"request":request})
+            return Response(data.data, status=status.HTTP_200_OK)
+            
+        except Exception as ex:
+            return Response({"message": ex.args[0]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    
+class LikedSer(ModelSerializer):
+    product = ProductSerializer()
+    class Meta:
+        model = CustomerFavoriteProduct
+        fields = ("id", "customer", "product")
